@@ -1,0 +1,7 @@
+# Format:
+# id|prompt|choice 1;choice 2;choice 3;choice 4|correct answer letter|optional explanation
+Q1|What does JVM stand for?|Java Virtual Machine;Java Variable Method;Joint Visual Model;Java Verified Mode|A|The JVM runs Java bytecode on your computer.
+Q2|Which collection stores items in a resizable ordered list?|ArrayList;HashMap;HashSet;TreeSet|A|ArrayList keeps elements in order and can grow as needed.
+Q3|Which keyword creates a new object in Java?|make;class;new;this|C|The new keyword allocates memory and calls a constructor.
+Q4|Which method is commonly used to read a full line from a Scanner?|nextInt();nextLine();readLine();scanLine()|B|nextLine() reads everything until the user presses Enter.
+Q5|What is the result of 7 / 2 when both numbers are integers in Java?|3;3.5;4;7|A|Integer division drops the decimal part.

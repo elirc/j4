@@ -1,0 +1,3 @@
+out/
+*.lock
+.quiz-bank-*.tmp
