@@ -82,9 +82,9 @@ The real line (`src/quiz/Question.java:17`) is:
         this.choices = Objects.requireNonNull(choices, "Choices cannot be null").stream().map(choice -> requireText(choice, "Choice")).toList();
 ```
 
-The mutation drops `.stream().map(...).toList()`, which costs three things at once. (1) The field now aliases the caller's list, so the caller can mutate a validated `Question` after the fact, and `getChoices()` hands out a mutable reference. (2) Per-choice `requireText` never runs in the constructor, so blank and null choices survive, and `validateChoices` at line 83 only re-checks `requireText` on whatever is in the list at that moment. (3) `getChoices()` no longer throws `UnsupportedOperationException`.
+The mutation drops `.stream().map(...).toList()`, which costs three things at once. (1) The field now aliases the caller's list, so the caller can mutate a validated `Question` after the fact, and `getChoices()` hands out a mutable reference. (2) Choices are no longer trimmed. `validateChoices` at line 83 still rejects blank or null entries, but `" yes "` is stored with its spaces, so stored text no longer matches what the rest of the app expects. (3) `getChoices()` no longer throws `UnsupportedOperationException`.
 
-Two suite cases die: "choice input is copied normalized and immutable" (`test/quiz/QuestionBankTest.java:59`), which passes `new ArrayList<>(List.of(" yes ","no"))`, clears it, and expects `getChoices().get(0)` to equal `"yes"`; and the immutability assertion in the same case.
+The suite case that dies is "choice input is copied normalized and immutable" (`test/quiz/QuestionBankTest.java:59`). It passes `new ArrayList<>(List.of(" yes ","no"))`, clears it, and expects `getChoices().get(0)` to equal `"yes"`. With the mutation, that call throws `IndexOutOfBoundsException` because the question shares the cleared list (observed by mutation, 2026-10-06). The trim and immutability assertions in the same case would fail next.
 </details>
 
 ## Drill 4: spot the bug

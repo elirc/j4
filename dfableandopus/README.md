@@ -4,7 +4,7 @@ This folder turns the Java CLI in `src/quiz/` into material for CRUD web-develop
 
 ## The pitch
 
-I took a read-only console quiz app and gave its question bank full CRUD without ever letting the program announce a save it had not made. Every mutating command builds a candidate list and hands it to one boundary, `QuestionBank.commit` (`src/quiz/QuestionBank.java:53`), which takes a cooperating file lock, re-reads the destination and refuses if the bytes moved under it, writes a temp sibling and requests `ATOMIC_MOVE`, and only then publishes the new immutable list into memory. The regression suite covers 28 cases and the delivery harness added nine separate-process scenarios, including two JVMs released through a shared gate where exactly one save wins.
+I took a read-only console quiz app and gave its question bank full CRUD without ever letting the program announce a save it had not made. Every mutating command builds a candidate list and hands it to one boundary, `QuestionBank.commit` (`src/quiz/QuestionBank.java:53`), which takes a cooperating file lock, re-reads the destination and refuses if the bytes moved under it, writes a temp sibling and requests `ATOMIC_MOVE`, and only then publishes the new immutable list into memory. The regression suite covers 28 cases and the delivery harness added nine separate-process scenarios, including two JVMs released through a shared gate where exactly one save wins. (That harness is not in this repo; the two-JVM race can be rerun with the driver in `../astraupskill/04-TESTING-AND-DEBUGGING.md`.)
 
 ## Off-stack framing
 

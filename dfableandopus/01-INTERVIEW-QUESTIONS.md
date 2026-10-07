@@ -48,7 +48,7 @@ The earlier edition was read-only, so "saved" had no meaning. The change describ
 
 ### B4. What breaks if you delete line 59? **mid**
 
-The stale check. Two loaded editors would both save, and the second would silently erase the first one's record: last writer wins with no signal. The test "two loaded editors reject stale second save" (`test/quiz/QuestionBankTest.java:45`) would fail on `equal(Files.readString(f), winner)`, and so would "outside file edits are preserved" (line 46), which writes `"outside editor data"` over the file and expects `delete("Q1")` to throw rather than clobber it.
+The stale check. Two loaded editors would both save, and the second would silently erase the first one's record: last writer wins with no signal. The test "two loaded editors reject stale second save" (`test/quiz/QuestionBankTest.java:45`) would fail at its `rejects(IOException.class, ...)` assertion, because the stale save now succeeds (checked by mutation, 2026-10-06; the runner stops at that first failure), and so would "outside file edits are preserved" (line 46), which writes `"outside editor data"` over the file and expects `delete("Q1")` to throw rather than clobber it.
 
 ### B5. What breaks if you delete the `FileLock`? **mid**
 
@@ -82,7 +82,7 @@ Because the record separator is `\t` and the row terminator is `\n`, and questio
 
 ### C2. Tell me about handling concurrency without a database. **mid**
 
-*Situation:* two copies of the CLI can open the same bank file. *Task:* guarantee one winner, with the loser told why. *Action:* capture the bytes at load, re-read and compare inside a `FileLock` before writing, and throw a message that tells the user to reopen. *Result:* `astraupskill/VERIFICATION.md` records a two-JVM test where both workers load, a shared gate releases them together, exactly one prints SAVED and the other prints REJECTED, and a third process then sees a two-record bank. The worker harness is in `test/quiz/QuestionBankTest.java:30`.
+*Situation:* two copies of the CLI can open the same bank file. *Task:* guarantee one winner, with the loser told why. *Action:* capture the bytes at load, re-read and compare inside a `FileLock` before writing, and throw a message that tells the user to reopen. *Result:* `astraupskill/VERIFICATION.md` records a two-JVM test where both workers load, a shared gate releases them together, exactly one prints SAVED and the other prints REJECTED, and a third process then sees a two-record bank. The worker mode is in `test/quiz/QuestionBankTest.java:30`; the driver that launched it is not in the repo, but `astraupskill/04-TESTING-AND-DEBUGGING.md` has a runnable replacement.
 
 ### C3. Tell me about a time you chose stricter defaults than the platform's. **junior**
 

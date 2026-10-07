@@ -1,6 +1,8 @@
 # Executed evidence and remaining boundaries
 
-Final verification passed 37 checks: 28 Java regression cases and nine separate-process scenarios. Compilation used Microsoft OpenJDK 17.0.10 with `--release 17 -Xlint:all`. The project runner reproduces the Java suite with `./run.ps1 -Test`. The central improvement workspace retains the broader process harness, logs, result JSON and delivery manifest for this project.
+Final verification passed 37 checks: 28 Java regression cases and nine separate-process scenarios. Compilation used Microsoft OpenJDK 17.0.10 with `--release 17 -Xlint:all`. The project runner reproduces the Java suite with `./run.ps1 -Test`.
+
+> **Status note (2026-10-06).** This page is a delivery record. The process harness, logs, result JSON and manifest it mentions were kept in a separate workspace and are **not in this repository**, so the nine process scenarios cannot be rerun from here as written. Re-checked today: the Java suite has exactly 28 `test(...)` cases (`test/quiz/QuestionBankTest.java:39-66`) and prints `RESULT passed=28` with no `-Xlint:all` warnings. The two-JVM race was reproduced 3 of 3 times with the node driver in [04](04-TESTING-AND-DEBUGGING.md#the-two-jvm-race-reproduced). Startup with a missing file exits with status 0, which matches the limit stated at the end of this page.
 
 The regression suite exercised real temporary files rather than a mocked save method. It verified legacy loading without a rewrite, persistent create and update, deletion of the final record, duplicate identity rejection, immutable snapshots, stale saves, a held cooperating lock, a destination-read failure and cleanup of temporary artifacts. Format cases covered delimiter and Unicode round-trips, empty explanations, malformed Base64, invalid UTF-8, unknown versions, truncated footers and duplicate or malformed legacy rows.
 

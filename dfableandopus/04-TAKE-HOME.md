@@ -60,7 +60,7 @@ At minimum cover: tag normalization and dedupe; a rejected tag character; the 8-
 The reviewer opens three things first, in this order.
 
 1. **The test file.** Did new cases reload from disk? A submission whose tag test only inspects `bank.list()` has not tested persistence, and that is the single most common failure in this exercise.
-2. **The migration.** Version 1 files must survive. The tempting shortcut is to change `HEADER` and let old files fall into the legacy branch at `src/quiz/QuestionBank.java:32`, which tests `text.startsWith("QUIZ-BANK")`: a v1 file would then reach `QuestionLoader` and be rejected as malformed pipe-delimited text, with a misleading error. A correct submission parses the version number from the header line and branches on it.
+2. **The migration.** Version 1 files must survive. The tempting shortcut is to change `HEADER` and stop there. The branch at `src/quiz/QuestionBank.java:32` only tests `text.startsWith("QUIZ-BANK")`, so a v1 file still goes to `parse`, whose exact-header check at line 82 rejects it with "Unknown or incomplete question bank format." Every existing bank becomes unloadable. A correct submission parses the version number from the header line and branches on it.
 3. **The error paths.** Grep for `interrupted()` in `App.edit`. If the tag prompt does not have the same `if (value == null)` guard as every other field, a Ctrl-Z at the wrong moment either applies a partial record or throws a `NullPointerException` into the catch at `src/quiz/App.java:38`.
 
 After those, the reviewer checks that `commit` is byte-identical to what it was, and runs `.\run.ps1 -Test` twice in a row to confirm nothing was left in the bank directory between runs.

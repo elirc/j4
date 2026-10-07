@@ -8,7 +8,7 @@
 
 **Action.** I gave all three mutating commands one shared write boundary. `create`, `update` and `delete` in `src/quiz/QuestionBank.java` each validate identity, build a candidate `List<Question>`, and call `commit`. `commit` serializes the entire candidate bank before touching disk, takes a cooperating lock on a `.lock` sibling, compares the destination byte for byte against what this instance last saw, writes a temp file, and asks for `ATOMIC_MOVE`. The fields `original` and `questions` are reassigned only after the move returns.
 
-**Result.** `./run.ps1 -Test` reports `RESULT passed=28`, plus nine separate-process scenarios. The persistence cases do not trust memory: each builds a second `QuestionBank` over the same path and asserts on what came back from disk.
+**Result.** `./run.ps1 -Test` reports `RESULT passed=28`. The delivery record also lists nine separate-process scenarios from a harness that is not in this repo. The persistence cases do not trust memory: each builds a second `QuestionBank` over the same path and asserts on what came back from disk.
 
 ## Story 2: two JVMs, one gate, one winner
 
@@ -16,7 +16,7 @@
 
 **Task.** Prove that two writers who both loaded the same state cannot both succeed.
 
-**Action.** I built a worker mode into the test binary (`test/quiz/QuestionBankTest.java:30`): a worker loads the bank, writes a "ready" file, then spins until a shared gate file appears, and only then calls `create`. The harness starts two fresh JVMs, waits for both ready files, touches the gate, and reads both stdout streams.
+**Action.** I built a worker mode into the test binary (`test/quiz/QuestionBankTest.java:30`): a worker loads the bank, writes a "ready" file, then spins until a shared gate file appears, and only then calls `create`. A driver starts two fresh JVMs, waits for both ready files, touches the gate, and reads both stdout streams. The original driver was not committed; `astraupskill/04-TESTING-AND-DEBUGGING.md` has a node replacement that reproduced the result 3 of 3 times on 2026-10-06.
 
 **Result.** `astraupskill/VERIFICATION.md` records exactly one SAVED and one REJECTED, and a third process afterwards observing the expected two-record bank. That is the difference between a concurrency claim and a concurrency test.
 
@@ -32,7 +32,7 @@
 
 ## Resume bullets
 
-- Added create, update and delete to a Java 17 question-bank CLI behind a single write boundary, so a command is persisted and verified on disk before it is reported as successful; 28 regression cases and 9 separate-process scenarios pass.
+- Added create, update and delete to a Java 17 question-bank CLI behind a single write boundary, so a command is persisted and verified on disk before it is reported as successful; 28 regression cases pass.
 - Implemented optimistic concurrency over a plain file using a byte-level compare against the loaded snapshot plus a cooperating sidecar `FileLock`, then proved it with two gated JVMs racing one save: exactly one winner, loser told to reopen.
 - Replaced a lossy pipe-delimited line format with a versioned, Base64-field format carrying a record count footer, allowing delimiters, tabs, newlines and non-ASCII text to round-trip without escaping bugs.
 - Hardened file loading with a REPORT-mode UTF-8 decoder and whole-file rejection of truncated footers, unknown versions and duplicate ids, preventing silent corruption from being written back on the next edit.

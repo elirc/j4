@@ -12,4 +12,23 @@ Start with [Question.java](../src/quiz/Question.java). A Question has stable ide
 
 Trace a create in this order: App.edit collects fields; Question validates them; QuestionBank.create rejects duplicate identity; commit serializes a candidate; the lock and original-byte comparison arbitrate stale writers; atomic move replaces the file; the bank publishes the new immutable collection; App prints success. Then compare [QuestionBankTest.java](../test/quiz/QuestionBankTest.java) with each step. Find tests that would fail if validation, conflict detection or delayed memory publication were removed.
 
+## Where each responsibility lives
+
+Line ranges were checked against the code on 2026-10-06. The whole of `src/quiz` is 561 lines, so reading it all is a realistic first-day goal.
+
+| Responsibility | Location |
+|---|---|
+| Domain invariants (trim, 2-26 choices, answer within range) | `Question.java:14-23`, label helpers `:63-76` |
+| One answer must name a real choice | `QuestionAttempt.java:10-16` |
+| Planned vs answered, score on answered only | `QuizResult.java:13-21`, `:43-49` |
+| Quiz loop, retry on bad input, EOF returns null | `QuizEngine.java:18-29`, `:54-67` |
+| Legacy pipe/semicolon parser | `QuestionLoader.java:10-43` |
+| Format sniffing at startup, reread guard | `QuestionBank.java:28-35` |
+| Create / update / delete build candidates | `QuestionBank.java:38-52` |
+| The one write boundary | `QuestionBank.java:53-69` (`commit`) |
+| Versioned format, footer, strict UTF-8 | `QuestionBank.java:70-101` |
+| Menu, forms, delete confirmation, result printing | `App.java:21-42`, `:44-58`, `:60-66`, `:67-86` |
+
+The menu has no "reload" entry (`App.java:26`). After a stale-save rejection, the only way to reopen today is to exit and restart. [Practice Ex 1](05-PRACTICE.md) adds one.
+
 The lock file is a coordination artifact, not the database. It can remain after the process exits; operating-system lock ownership is tied to the open channel. Deleting the filename while another process uses it is not the intended recovery procedure.
